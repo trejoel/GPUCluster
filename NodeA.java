@@ -15,6 +15,8 @@ public class NodeA {
 	private boolean is_leader;	
 	private int PUERTOSERVICIO; //starting the service at port 4999 + idSMA
 	private ChannelClient outputRequest;
+	private float timeToFinish;
+	private float timeToStart;
   /* According to paper Agent Based Load Balancing in Cloud Data Center, there exists the following configurations**/
 	
 	/* ***** 
@@ -47,32 +49,33 @@ public class NodeA {
       vMachine=new ArrayList<JobA>();
       listSMA = new Vector<Integer>();
       PUERTOSERVICIO=5000+xID;
+      this.timeToStart=0;
+      this.timeToFinish=0;
       //vMachine = new Vector();
   }
   
   //Estimates the time to be available Added by Joel
   public float isAvailable(float curTime){
 	  float available=0;
-	  available=computeFinishTime(curTime);
+	  available=computeHoldTime(curTime);
 	  return available;
   }
   
-  protected float computeFinishTime(float curTime){	  
-	  float finishTime=0;
+  protected float computeHoldTime(float curTime){	  
+	  float holdTime=this.timeToFinish; //This is the time in the simulation
 	  if (vMachine.size()>0) {
-		  finishTime=vMachine.get(0).get_starting_time()+vMachine.get(0).get_execution_time();
-		  if (finishTime>curTime) //The task is still in the node
-		  {
-			  finishTime=finishTime-curTime; // The time Jobi has to wail
+		  //holdTime=vMachine.get(0).get_starting_time()+vMachine.get(0).get_execution_time();
+		  if (holdTime>curTime) //The task is still in the node
+		  {			  
+			  holdTime=holdTime-curTime; // The time Jobi has to wait
 		  }
 		  else
 		  {
-			  vMachine.get(0).removeSMA(this.getID());
-			  vMachine.remove(0);
-			  finishTime=0;
+			  //vMachine.get(0).removeSMA(this.getID());
+			  holdTime=0;
 		  }
 	  }
-    return finishTime;
+    return holdTime;
   }
   
   //Estimates the time to be available Added by Joel
@@ -130,12 +133,43 @@ public class NodeA {
   	return true;
   }
   
-  public void receiveVMA(JobA x){
-  	//This function communicates via Socket with a SMA if the current SMA accept a VMA    	
+  public void receiveVMA(JobA x){	  
+  	 //This function communicates via Socket with a SMA if the current SMA accept a VMA    
+	 //Here to review
+	 float exTime=0;	 
+	  this.timeToStart=x.get_starting_time()+this.computeHoldTime(x.get_starting_time());
+	   exTime=computeExecutionTime(x);
+	 this.timeToFinish=this.timeToStart+exTime;
+	 //Here to review
   	vMachine.add(x);    
   	//Add the trace to the VMA added by Joel 06-January-2016
   	x.addSMA(this.getID());
   	//Add the trace to the VMA added by Joel 06-January-2016
+  }
+  
+  protected float computeExecutionTime(JobA x){
+	  //Here we make a map, if number of CPU is 20 then it is a multi-core
+	  //if number of CPU is 40 then it is 256 GPU
+	  //if number of CPU is 60 then it is 2496 GPU
+	  float xExTime=x.get_execution_time();
+	  switch (this.getAvaibleCPU()){
+	  case 20: xExTime=x.get_execution_time()/2;
+	  		   break;
+	  case 40: xExTime=x.get_execution_time()/10;
+	  		   break;
+	  case 60: xExTime=x.get_execution_time()/100;
+	  		   break;
+      default: xExTime=x.get_execution_time();	  		   	  		   
+	  }
+	  return xExTime;
+  }
+  
+  public float getStartTime(){
+	  return this.timeToStart;
+  }
+  
+  public float getFinishTime(){
+	  return this.timeToFinish;
   }
   
   public void removeVMA(int x){

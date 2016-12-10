@@ -54,8 +54,10 @@ public class Testbed extends Thread {
 	
     public void run(){    	
 		int xCPU_Avaible,xMEM_Avaible;
-		long xstart_time=0;
+		long xstart_time=0;		
+		long preexecution_time=0;
 		long xexecution_time=0;
+		long xdeadline=0;
 		long delay=0;
 		long old_start_time;
 		myWorkload=new WorkloadGenerator();
@@ -64,16 +66,20 @@ public class Testbed extends Thread {
 		 * */		
 		try{
 		//for (int i=0;i<300;i++){
-		for (int i=0;i<23;i++){
+		for (int i=0;i<25;i++){
 		//public VMA(int xId, int xCPU_Avaible, int xMEM_Avaible, float xstart_time, float xexecution_time)
 		  xCPU_Avaible=myWorkload.generateRandomCPU();
 		  xMEM_Avaible=myWorkload.generateRandomMEM();
 		  old_start_time=xstart_time;
 		  xstart_time=myWorkload.generateRandomStartTime(xstart_time);			
+		  preexecution_time=xexecution_time;
 		  xexecution_time= myWorkload.generateRandomExecutionTime(xexecution_time);
+		  xexecution_time=xexecution_time-preexecution_time;
+		  //xexecution_time= myWorkload.generateRandomExecutionTime();		  
+		  xdeadline=myWorkload.generateDeadline();
 		  delay=xstart_time-old_start_time;
 		  Thread.sleep(delay);
-		  virtual_machine[i]=new JobA(i, xCPU_Avaible, xMEM_Avaible, (float)xstart_time, (float)xexecution_time);
+		  virtual_machine[i]=new JobA(i, xCPU_Avaible, xMEM_Avaible, (float)xstart_time, (float)xexecution_time,(float)xdeadline);
 		  //Here we need to subscribe the VMA to the FA. Review if the listVMA is better to be a VMA object		  
 		  front_agent.receiveJob(virtual_machine[i], xstart_time);
 		  //virtual_machine[i].printVMA();

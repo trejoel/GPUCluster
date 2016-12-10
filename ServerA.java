@@ -33,9 +33,12 @@ public class ServerA {
 		curSMA=0;
 		listSMA=new Vector<NodeA>();
 		listVMA=new Vector<Integer>();
+		this.setGPU();
 	}
 	
 	public void setGPU(){
+	
+		//CPUs with 8 cores
 		for (int i=0;i<6;i++){
 			SMA[i]=new NodeA(i, 20, 48);
 			//front_agent.subscribeSMA(i);
@@ -45,6 +48,7 @@ public class ServerA {
 		
 		//There exists 8 hosts with 40 CORES and 96 GB.
 		
+		//GPUs with 256 cores (Quadro)
 		for (int i=6;i<14;i++){  
 			SMA[i]=new NodeA(i, 40, 96);
 			//front_agent.subscribeSMA(i+6);
@@ -53,6 +57,8 @@ public class ServerA {
 		}
 		
 		//There exists 6 hosts with 60 CORES and 144 GB.
+				
+		//GPUs K20 with 2496 cores 
 		for (int i=14;i<20;i++){
 			SMA[i]=new NodeA(i, 60, 144);
 			//front_agent.subscribeSMA(i+14);
@@ -64,7 +70,8 @@ public class ServerA {
 	
 	public void receiveJob(JobA job, long timeArrival){
 		System.out.println("Received Job:"+job.getId()+" at time:"+timeArrival+" estimation time="+job.get_execution_time());
-	    roundRobin(job, this.curSMA);
+	    		
+		roundRobin(job, this.curSMA,timeArrival);
 	    curSMA++;
 	}
 	
@@ -94,10 +101,22 @@ public class ServerA {
 	/*
 	 * Here we define the scheduling policies
 	 * */	
-	public void roundRobin(JobA job, int i){
-	  int index=i%20;
-	  listSMA.get(index);
-	  System.out.println("Se asigna a la SMA:"+index);
+	public void roundRobin(JobA job, int i,float xTimeArrival){
+	    NodeA xNode;
+		float xAvailable=0;
+		int index=i%20;
+		xNode=listSMA.get(index);
+	    xAvailable=xNode.isAvailable(xTimeArrival);
+	    if (xAvailable<job.getDeadline())
+	    {
+	    	xNode.receiveVMA(job);
+	    	 System.out.println("Se asigna a la SMA:"+xNode.getID()+" hold time: "+xAvailable);
+	    }
+	    else
+	    {
+	    	 System.out.println("No se pudo asignar el Job:"+job.getId()+" hold time:"+xAvailable);
+	    }
+	   
 	}
 		
 

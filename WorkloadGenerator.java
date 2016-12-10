@@ -53,6 +53,7 @@ public class WorkloadGenerator{
 		averageDelayForAllocation=averageDelayForAllocation+delayForAllocation;		
 		return averageDelayForAllocation;
 	}
+		
 	
 	public long generateRandomExecutionTime(long averageDelayForDeallocation){
 		// Based on WorkLoadGenerator
@@ -60,6 +61,21 @@ public class WorkloadGenerator{
 		//We construct a function that determines a value from from 30000 to 40000 starting from the arrival time of the previous machine.
         long delayForDeallocation = (long) (AVG_INTERDEPARTURE_TIME*(-Math.log(Math.random()))); //  Arrival process is Poisson Distributed
         averageDelayForDeallocation=averageDelayForDeallocation+delayForDeallocation;			
+        //averageDelayForDeallocation=delayForDeallocation;			
 		return averageDelayForDeallocation;		
 	}
+
+	
+    public long generateDeadline(){
+		Random randomGenerator=new Random();
+    	long x=0;
+    	int y=randomGenerator.nextInt(3);
+    	switch (y){
+    	  case 0: x=2500;
+    	  case 1: x=5000;
+    	  case 2: x=7500;
+    	  default: x=10000;
+    	}
+    	return x;
+    }
 }

@@ -28,6 +28,7 @@ public class JobA  implements Serializable{
 	private float starting_time;
 	private float execution_time; //ending_time is just computing ending_time=starting_time+execution_time
 	private float ending_time;
+	private float deadline;
 	private int currentSMA; //Set the identifier of the current SMA
 	
 	
@@ -40,7 +41,11 @@ public class JobA  implements Serializable{
 	//According to CLUS 2015, average every 500 ms arrives a new VM and it remains in the system 35000 ms. 
 	//The number of cores corresponds to the use of CPU
 	//Consider the best execution time as xCPU_Avaible, xMemAvaible consider as the priority
-	public JobA(int xId, int xCPU_Avaible, int xMEM_Avaible, float xstart_time, float xexecution_time){
+	
+	
+	//Added by Joel 9th-Dec-2016
+	//We add a deadline, the time in MS  waits for the resource
+	public JobA(int xId, int xCPU_Avaible, int xMEM_Avaible, float xstart_time, float xexecution_time, float xdeadline){
 		this.Id=xId;
 		this.CPU_avaible=xCPU_Avaible;
 		if (xMEM_Avaible>20 || xMEM_Avaible<1){
@@ -52,6 +57,7 @@ public class JobA  implements Serializable{
 		this.percentage_CPU=percentageResource.HIGH;
 		this.percentage_MEM=percentageResource.HIGH;
 		this.ending_time=this.get_ending_time();
+		this.deadline=xdeadline;
 		//Added by Joel 06-January-2016 
         hostSMA=new ArrayList<Integer>();
 		//Added by Joel 06-January-2016 		
@@ -80,6 +86,10 @@ public class JobA  implements Serializable{
 	
 	public float get_execution_time(){
 		return this.execution_time;
+	}
+	
+	public float getDeadline(){
+		return this.deadline;
 	}
 	
 	public percentageResource get_percentage(int memCPU){
