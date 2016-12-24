@@ -1,5 +1,8 @@
 package Architecture;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Vector;
 import Communication.*;
@@ -68,11 +71,24 @@ public class ServerA {
 		
 	}
 	
-	public void receiveJob(JobA job, long timeArrival){
-		System.out.println("Received Job:"+job.getId()+" at time:"+timeArrival+" estimation time="+job.get_execution_time());
-	    		
-		roundRobin(job, this.curSMA,timeArrival);
+	public void restartNodes(){
+		for (int i=0;i<20;i++){
+			SMA[i].setFinishTime(0);
+		}
+	}
+	
+	public String receiveJob(JobA job, long timeArrival, int policy){
+		String text="Received Job:"+job.getId()+" at time:"+timeArrival+" estimation time="+job.get_execution_time();
+	    switch (policy){  //1 Round robin; 2 Best fit; 3 First come first serve
+	       case 1:text=text+roundRobin(job, this.curSMA,timeArrival);
+	       		  break;
+	       case 2:text=text+roundRobin(job, this.curSMA,timeArrival);
+	       		  break;
+	       default: text=text+roundRobin(job, this.curSMA,timeArrival);
+	       			break;
+	    }		
 	    curSMA++;
+	    return text;
 	}
 	
 	protected void assignVMA(JobA xVMA, NodeA yHost){
@@ -101,22 +117,40 @@ public class ServerA {
 	/*
 	 * Here we define the scheduling policies
 	 * */	
-	public void roundRobin(JobA job, int i,float xTimeArrival){
-	    NodeA xNode;
+	
+	//public void printFile(PrintWriter printWriter, String text){
+	public void printFile(String text){
+		File file=new File("file.txt");
+		try(  PrintWriter out = new PrintWriter( file)  ){
+		    out.println(text);
+		    out.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}  
+	}
+	
+	public String roundRobin(JobA job, int i,float xTimeArrival){
+	    String text="";
+		NodeA xNode;
 		float xAvailable=0;
 		int index=i%20;
 		xNode=listSMA.get(index);
 	    xAvailable=xNode.isAvailable(xTimeArrival);
+	    xAvailable=xAvailable+xNode.computeExecutionTime(job); //This is the estimated time to be return
 	    if (xAvailable<job.getDeadline())
 	    {
 	    	xNode.receiveVMA(job);
-	    	 System.out.println("Se asigna a la SMA:"+xNode.getID()+" hold time: "+xAvailable);
+	    	text="Se asigna a la SMA:"+xNode.getID()+" hold time: "+xAvailable;
+	    	//text="GREAT Waiting time:"+xAvailable;
+	    	//System.out.println("Se asigna a la SMA:"+xNode.getID()+" hold time: "+xAvailable);
 	    }
 	    else
 	    {
-	    	 System.out.println("No se pudo asignar el Job:"+job.getId()+" hold time:"+xAvailable);
+	    	//text="SORRY Waiting time:"+xAvailable;
+	    	text="No se pudo asignar el Job:"+job.getId()+" hold time:"+xAvailable;
+	    	//System.out.println("No se pudo asignar el Job:"+job.getId()+" hold time:"+xAvailable);
 	    }
-	   
+	    return text;
 	}
 		
 

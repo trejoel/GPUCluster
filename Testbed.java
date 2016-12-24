@@ -1,5 +1,8 @@
 package Architecture;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.Hashtable;
 
 public class Testbed extends Thread {
@@ -66,7 +69,7 @@ public class Testbed extends Thread {
 		 * */		
 		try{
 		//for (int i=0;i<300;i++){
-		for (int i=0;i<25;i++){
+		for (int i=0;i<20;i++){
 		//public VMA(int xId, int xCPU_Avaible, int xMEM_Avaible, float xstart_time, float xexecution_time)
 		  xCPU_Avaible=myWorkload.generateRandomCPU();
 		  xMEM_Avaible=myWorkload.generateRandomMEM();
@@ -81,8 +84,9 @@ public class Testbed extends Thread {
 		  Thread.sleep(delay);
 		  virtual_machine[i]=new JobA(i, xCPU_Avaible, xMEM_Avaible, (float)xstart_time, (float)xexecution_time,(float)xdeadline);
 		  //Here we need to subscribe the VMA to the FA. Review if the listVMA is better to be a VMA object		  
-		  front_agent.receiveJob(virtual_machine[i], xstart_time);
-		  //virtual_machine[i].printVMA();
+		  //front_agent.receiveJob(virtual_machine[i], xstart_time,1);
+		  System.out.println(front_agent.receiveJob(virtual_machine[i], xstart_time,1));
+		  //virtual_machine[i].printVMA();		  
 	}	
 	}catch (Exception ex){
         System.out.println(ex);
@@ -91,14 +95,45 @@ public class Testbed extends Thread {
     }
 
 
+    public void roundRobin(){
+    	String text="";
+		File file=new File("roundRobin.txt");
+		try(  PrintWriter out = new PrintWriter( file)  ){
+	    	for (int i=0;i<20;i++){
+	    		  //virtual_machine[i]=new JobA(i, xCPU_Avaible, xMEM_Avaible, (float)xstart_time, (float)xexecution_time,(float)xdeadline);
+	    		  //Here we need to subscribe the VMA to the FA. Review if the listVMA is better to be a VMA object		      		      	
+	    		text=front_agent.receiveJob(virtual_machine[i], (long)virtual_machine[i].get_starting_time(),1);
+	    		out.println(text);  
+	    		//virtual_machine[i].printVMA();		  
+	    	   }	    			   
+			
+		    out.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}    	    	    	
+
+    }
 
 	/*Code added 2016 October 6th**/
 	
-
+	//public void printFile(PrintWriter printWriter, String text){
+	public void printFile(String text){
+		File file=new File("roundRobin.txt");
+		try(  PrintWriter out = new PrintWriter( file)  ){
+		    out.println(text);
+		    out.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}  
+	}
 	
 	public static void main(String args[]){						
 		Testbed Simulation=new Testbed(0,"127.0.0.0",1);
 		Simulation.start();
+		Simulation.front_agent.restartNodes();
+		Simulation.roundRobin();
+		//Simulation.printFile("Hola");
+		System.out.println("Se fini!");				
         //new Channel(0);
         //new Channel(1);
 	}

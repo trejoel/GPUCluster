@@ -127,6 +127,10 @@ public class NodeA {
   	this.is_leader=ldr;
   }
   
+  public void setFinishTime(float x){
+	  this.timeToFinish=x;
+  }
+  
   public boolean acceptVMA(){
   	// This function determines if the SMA can accept a new Virtual Machine
   	
@@ -161,6 +165,7 @@ public class NodeA {
 	  		   break;
       default: xExTime=x.get_execution_time();	  		   	  		   
 	  }
+	  //System.out.println("ESTE ES LA CAPACIDAD DEL NODE: "+this.getAvaibleCPU()+ " ExTime:"+xExTime);
 	  return xExTime;
   }
   
