@@ -67,9 +67,10 @@ public class ServerA {
 			//front_agent.subscribeSMA(i+14);
 			subscribeSMA(SMA[i]);
 			//SMAS.put(i+14, SMA_low[i]);
-		}
-		
+		}							
 	}
+
+	
 	
 	public void restartNodes(){
 		for (int i=0;i<20;i++){
@@ -77,14 +78,48 @@ public class ServerA {
 		}
 	}
 	
+	protected void reOrder(int indexA, int indexB){
+		NodeA temp;		
+		temp=SMA[indexA];
+		SMA[indexA]=SMA[indexB];
+		SMA[indexB]=temp;
+	}
+	
+	public void initiallizeBestFit(){
+		this.reOrder(0,14);
+		this.reOrder(1,15);
+		this.reOrder(2,16);
+		this.reOrder(3,17);
+		this.reOrder(4,18);
+		this.reOrder(5,19);
+		/*for (int i=0;i<20;i++){
+			listSMA.remove(SMA[i]);
+        }        
+		for (int i=0;i<20;i++){
+        	subscribeSMA(SMA[i]);
+        }*/
+        
+	}
+	
+	public void orderByFinishTime(){		
+		for (int i=1;i<20;i++){
+			for (int j=0;j<20-i;j++){
+				if (SMA[j].getFinishTime()>SMA[i].getFinishTime()){
+					reOrder(i,j);
+				}
+			}
+		}
+	}
+	
 	public String receiveJob(JobA job, long timeArrival, int policy){
-		String text="Received Job:"+job.getId()+" at time:"+timeArrival+" estimation time="+job.get_execution_time();
+		//String text="Received Job:"+job.getId()+" at time:"+timeArrival+" estimation time="+job.get_execution_time();
+		String text="";
 	    switch (policy){  //1 Round robin; 2 Best fit; 3 First come first serve
 	       case 1:text=text+roundRobin(job, this.curSMA,timeArrival);
 	       		  break;
-	       case 2:text=text+roundRobin(job, this.curSMA,timeArrival);
+	       case 2:text=text+bestFit(job, this.curSMA,timeArrival);
 	       		  break;
-	       default: text=text+roundRobin(job, this.curSMA,timeArrival);
+	       default: text=text+firstComefirstServe(job, this.curSMA,timeArrival);
 	       			break;
 	    }		
 	    curSMA++;
@@ -127,33 +162,112 @@ public class ServerA {
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}  
-	}
-	
+	}	
 	public String roundRobin(JobA job, int i,float xTimeArrival){
 	    String text="";
 		NodeA xNode;
 		float xAvailable=0;
 		int index=i%20;
 		xNode=listSMA.get(index);
-	    xAvailable=xNode.isAvailable(xTimeArrival);
+	    xAvailable=xNode.isAvailable(xTimeArrival);	    
+	    text=text+job.getId()+","+job.get_starting_time()+","+xAvailable;
 	    xAvailable=xAvailable+xNode.computeExecutionTime(job); //This is the estimated time to be return
+	    text=text+","+xAvailable;
 	    if (xAvailable<job.getDeadline())
 	    {
 	    	xNode.receiveVMA(job);
-	    	text="Se asigna a la SMA:"+xNode.getID()+" hold time: "+xAvailable;
+	    	text=text+",1,"+xNode.getID();
 	    	//text="GREAT Waiting time:"+xAvailable;
 	    	//System.out.println("Se asigna a la SMA:"+xNode.getID()+" hold time: "+xAvailable);
 	    }
 	    else
 	    {
 	    	//text="SORRY Waiting time:"+xAvailable;
-	    	text="No se pudo asignar el Job:"+job.getId()+" hold time:"+xAvailable;
+	    	text=text+",0,"+xNode.getID();
 	    	//System.out.println("No se pudo asignar el Job:"+job.getId()+" hold time:"+xAvailable);
-	    }
+	    }	    
 	    return text;
 	}
+	
+	public String bestFit(JobA job, int i, float xTimeArrival){
+	    String text="";
+		float xAvailable=0;
+	    float lessTime=100000;
+	    int bestIndex=0;
+	    NodeA xNode;
+	    for (int index=0;index<20;index++){
+			xNode=listSMA.get(index);
+		    xAvailable=xNode.isAvailable(xTimeArrival);
+		    //text=text+" Task;"+job.getId()+";Waiting Time;"+xAvailable;
+		    xAvailable=xAvailable+xNode.computeExecutionTime(job); //This is the estimated time to be return
+		    //text=text+";Execution_Time;"+xAvailable;
+		    if (xAvailable<lessTime){
+		    	bestIndex=index;
+		    	lessTime=xAvailable;
+		    }
+	    }	  
+	    
+	    xNode=listSMA.get(bestIndex); 	 
+	    text=text+job.getId()+","+job.get_starting_time()+","+xNode.isAvailable(xTimeArrival);
+	    //text=text+"Waiting Time:"+ xNode.computeHoldTime(xTimeArrival)+";Execution_Time;"+xAvailable;
+	    text=text+","+lessTime;
+	    if (lessTime<job.getDeadline())
+	    {
+	    	xNode.receiveVMA(job);
+	    	//text="Se asigna a la SMA:"+xNode.getID()+" hold time: "+xAvailable;
+	    	//text=text+";1;Assigned to WS;"+xNode.getID();
+	    	text=text+",1,"+xNode.getID();
+	    	//text="GREAT Waiting time:"+xAvailable;
+	    	//System.out.println("Se asigna a la SMA:"+xNode.getID()+" hold time: "+xAvailable);
+	    }
+	    else
+	    {
+	    	//text="SORRY Waiting time:"+xAvailable;
+	    	//text="No se pudo asignar el Job:"+job.getId()+" hold time:"+xAvailable;
+	    	//text=text+";0;Rejected by WS;"+xNode.getID();
+	    	//System.out.println("No se pudo asignar el Job:"+job.getId()+" hold time:"+xAvailable);
+	    	text=text+",0,"+xNode.getID();
+	    }	    
+	    return text;		
+	}
 		
-
+	public String firstComefirstServe(JobA job, int i,float xTimeArrival){
+	    String text="";
+		NodeA xNode;
+		float xAvailable=0;
+		int index=i%20;
+		if (index==0){
+			this.orderByFinishTime();
+		}
+		//xNode=listSMA.get(index);
+		xNode=SMA[index];
+	    xAvailable=xNode.isAvailable(xTimeArrival);
+	    //text=text+" Task;"+job.getId()+";Waiting Time;"+xAvailable;
+	    text=text+job.getId()+","+job.get_starting_time()+","+xAvailable;
+	    xAvailable=xAvailable+xNode.computeExecutionTime(job); //This is the estimated time to be return
+	    //text=text+";Execution_Time;"+xAvailable;
+	    text=text+","+xAvailable;
+	    if (xAvailable<job.getDeadline())
+	    {
+	    	xNode.receiveVMA(job);	    	
+	    	//text=" Se asigna a la WS:"+xNode.getID()+" hold time: "+xAvailable;
+	    	//text=text+";1;Assigned to WS;"+xNode.getID();
+	    	//text="GREAT Waiting time:"+xAvailable;
+	    	//System.out.println("Se asigna a la SMA:"+xNode.getID()+" hold time: "+xAvailable);
+	    	text=text+",1,"+xNode.getID();
+	    }
+	    else
+	    {
+	    	//text="SORRY Waiting time:"+xAvailable;
+	    	//text="No se pudo asignar el Job:"+job.getId()+"al WS:"+xNode.getID()+" hold time:"+xAvailable;
+	    	//text=text+";0;Rejected by WS;"+xNode.getID();
+	    	//System.out.println("No se pudo asignar el Job:"+job.getId()+" hold time:"+xAvailable);
+	    	text=text+",0,"+xNode.getID();
+	    }	    
+	    return text;
+	}
+	
+	
 	/*
 	 * Here we define the scheduling policies
 	 * */		

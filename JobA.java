@@ -29,6 +29,7 @@ public class JobA  implements Serializable{
 	private float execution_time; //ending_time is just computing ending_time=starting_time+execution_time
 	private float ending_time;
 	private float deadline;
+	private int synchro; //Defines how synchronizable is the task
 	private int currentSMA; //Set the identifier of the current SMA
 	
 	
@@ -62,9 +63,17 @@ public class JobA  implements Serializable{
         hostSMA=new ArrayList<Integer>();
 		//Added by Joel 06-January-2016 		
         this.currentSMA=0; //By default it is 0, it means it does not have SMA October 2016
+        //Generates how synchronizable is a task
+        //Non paralelizable --0, semi-paralelizable 50% paralelizable, paralelizable 100%
+        this.synchro =  (int)(Math.random() * 3); 
 	}
 	
 	//getters
+	
+	
+	public int getSynchro(){
+		return this.synchro;
+	}
 	
 	public int getId()
 	{

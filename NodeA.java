@@ -157,12 +157,39 @@ public class NodeA {
 	  //if number of CPU is 60 then it is 2496 GPU
 	  float xExTime=x.get_execution_time();
 	  switch (this.getAvaibleCPU()){
-	  case 20: xExTime=x.get_execution_time()/2;
-	  		   break;
-	  case 40: xExTime=x.get_execution_time()/10;
-	  		   break;
-	  case 60: xExTime=x.get_execution_time()/100;
-	  		   break;
+	  case 20: 		 if (x.getSynchro()==2){
+		  				xExTime=x.get_execution_time()/2;
+	                 }
+	  				else if (x.getSynchro()==1){
+	  					xExTime=(x.get_execution_time()/2 + (x.get_execution_time()/4));		
+	  				}
+	  				else //x.getSynchor()==0
+	  				{
+	  					xExTime=x.get_execution_time();
+	  				}
+	  		   		break;
+	  case 40: 		 if (x.getSynchro()==2){
+						xExTime=(x.get_execution_time()/10+(x.get_execution_time()/100));
+       				  }
+					else if (x.getSynchro()==1){
+						xExTime=(x.get_execution_time()/10 + (x.get_execution_time()/20));		
+					}
+					else //x.getSynchor()==0
+					{
+						xExTime=x.get_execution_time();
+					}
+   					break;
+	  case 60: 		 if (x.getSynchro()==2){
+						xExTime=(x.get_execution_time()/100+(x.get_execution_time()/500));
+			  		}
+					else if (x.getSynchro()==1){
+						xExTime=(x.get_execution_time()/100 + (x.get_execution_time()/200));		
+					}
+					else //x.getSynchor()==0
+					{
+						xExTime=x.get_execution_time();
+					}
+					break;
       default: xExTime=x.get_execution_time();	  		   	  		   
 	  }
 	  //System.out.println("ESTE ES LA CAPACIDAD DEL NODE: "+this.getAvaibleCPU()+ " ExTime:"+xExTime);

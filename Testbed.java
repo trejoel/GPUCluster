@@ -69,7 +69,7 @@ public class Testbed extends Thread {
 		 * */		
 		try{
 		//for (int i=0;i<300;i++){
-		for (int i=0;i<20;i++){
+		for (int i=0;i<300;i++){
 		//public VMA(int xId, int xCPU_Avaible, int xMEM_Avaible, float xstart_time, float xexecution_time)
 		  xCPU_Avaible=myWorkload.generateRandomCPU();
 		  xMEM_Avaible=myWorkload.generateRandomMEM();
@@ -83,9 +83,10 @@ public class Testbed extends Thread {
 		  delay=xstart_time-old_start_time;
 		  Thread.sleep(delay);
 		  virtual_machine[i]=new JobA(i, xCPU_Avaible, xMEM_Avaible, (float)xstart_time, (float)xexecution_time,(float)xdeadline);
+		  //System.out.println("Task synchronizable:"+virtual_machine[i].getSynchro());
 		  //Here we need to subscribe the VMA to the FA. Review if the listVMA is better to be a VMA object		  
 		  //front_agent.receiveJob(virtual_machine[i], xstart_time,1);
-		  System.out.println(front_agent.receiveJob(virtual_machine[i], xstart_time,1));
+		  //System.out.println(front_agent.receiveJob(virtual_machine[i], xstart_time,1));
 		  //virtual_machine[i].printVMA();		  
 	}	
 	}catch (Exception ex){
@@ -98,8 +99,10 @@ public class Testbed extends Thread {
     public void roundRobin(){
     	String text="";
 		File file=new File("roundRobin.txt");
+		
 		try(  PrintWriter out = new PrintWriter( file)  ){
-	    	for (int i=0;i<20;i++){
+			out.println("[taskID, Start Time, Waiting_Time, Execution_Time, Accepted, WorkStationID]");
+			for (int i=0;i<300;i++){
 	    		  //virtual_machine[i]=new JobA(i, xCPU_Avaible, xMEM_Avaible, (float)xstart_time, (float)xexecution_time,(float)xdeadline);
 	    		  //Here we need to subscribe the VMA to the FA. Review if the listVMA is better to be a VMA object		      		      	
 	    		text=front_agent.receiveJob(virtual_machine[i], (long)virtual_machine[i].get_starting_time(),1);
@@ -113,7 +116,45 @@ public class Testbed extends Thread {
 		}    	    	    	
 
     }
+    
+    public void bestFit(){
+    	String text="";
+		File file=new File("bestFit.txt");
+		try(  PrintWriter out = new PrintWriter( file)  ){
+			out.println("[taskID , Start Time, Waiting_Time, Execution_Time, Accepted,  WorkStationID]");
+	    	for (int i=0;i<300;i++){
+	    		  //virtual_machine[i]=new JobA(i, xCPU_Avaible, xMEM_Avaible, (float)xstart_time, (float)xexecution_time,(float)xdeadline);
+	    		  //Here we need to subscribe the VMA to the FA. Review if the listVMA is better to be a VMA object		      		      	
+	    		text=front_agent.receiveJob(virtual_machine[i], (long)virtual_machine[i].get_starting_time(),2);
+	    		out.println(text);  
+	    		//virtual_machine[i].printVMA();		  
+	    	   }	    			   
+			
+		    out.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}    	    	    	    	
+    }
 
+    public void firstComeFirstServe(){
+    	String text="";
+		File file=new File("firstCome.txt");
+		try(  PrintWriter out = new PrintWriter( file)  ){
+			out.println("[taskID, Start Time , Waiting_Time, Execution_Time, Accepted ,WorkStationID]");
+	    	for (int i=0;i<300;i++){
+	    		  //virtual_machine[i]=new JobA(i, xCPU_Avaible, xMEM_Avaible, (float)xstart_time, (float)xexecution_time,(float)xdeadline);
+	    		  //Here we need to subscribe the VMA to the FA. Review if the listVMA is better to be a VMA object		      		      	
+	    		text=front_agent.receiveJob(virtual_machine[i], (long)virtual_machine[i].get_starting_time(),3);
+	    		out.println(text);  
+	    		//virtual_machine[i].printVMA();		  
+	    	   }	    			   
+			
+		    out.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}    	    	    	    	
+    }    
+    
 	/*Code added 2016 October 6th**/
 	
 	//public void printFile(PrintWriter printWriter, String text){
@@ -129,9 +170,13 @@ public class Testbed extends Thread {
 	
 	public static void main(String args[]){						
 		Testbed Simulation=new Testbed(0,"127.0.0.0",1);
-		Simulation.start();
-		Simulation.front_agent.restartNodes();
+		Simulation.start();		
 		Simulation.roundRobin();
+		Simulation.front_agent.restartNodes();
+		Simulation.bestFit();
+		Simulation.front_agent.restartNodes();
+		Simulation.front_agent.initiallizeBestFit();
+		Simulation.firstComeFirstServe();
 		//Simulation.printFile("Hola");
 		System.out.println("Se fini!");				
         //new Channel(0);

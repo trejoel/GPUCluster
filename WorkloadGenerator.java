@@ -11,7 +11,7 @@ public class WorkloadGenerator{
 
     
 	private static final int AVG_INTERARRIVAL_TIME=500;
-	private static final int AVG_INTERDEPARTURE_TIME=35000;
+	private static final int AVG_INTERDEPARTURE_TIME=350000;
 	
 	
     public WorkloadGenerator (){
@@ -71,10 +71,10 @@ public class WorkloadGenerator{
     	long x=0;
     	int y=randomGenerator.nextInt(3);
     	switch (y){
-    	  case 0: x=2500;
-    	  case 1: x=5000;
-    	  case 2: x=7500;
-    	  default: x=10000;
+    	  case 0: x=25000;
+    	  case 1: x=50000;
+    	  case 2: x=75000;
+    	  default: x=100000;
     	}
     	return x;
     }
